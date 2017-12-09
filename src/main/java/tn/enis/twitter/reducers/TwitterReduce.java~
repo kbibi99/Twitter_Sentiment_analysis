@@ -3,7 +3,7 @@ package tn.enis.twitter.reducers;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.bson.Document;
@@ -14,14 +14,12 @@ import com.mongodb.client.MongoDatabase;
 
 import tn.enis.twitter.dictionary.Dic;
 
-public class TwitterReduce extends Reducer<Text, Text, Text, DoubleWritable> {
-	MongoClient mongoClient = new MongoClient("localhost", 27017);
-
+public class TwitterReduce extends Reducer<Text, Text, Text, FloatWritable> {
 	public void reduce(Text key, Iterable<Text> values, Context context)
 			throws IOException, InterruptedException {
-
-		MongoDatabase db = mongoClient.getDatabase("twitter");
-		MongoCollection<Document> collection = db.getCollection("hashtags");
+		MongoClient mongoClient=new MongoClient();
+		MongoDatabase db=mongoClient.getDatabase("twitter");
+		MongoCollection<Document> collection=db.getCollection("hashtags");
 
 		Dic dic = new Dic();
 		Iterator<Text> i = values.iterator();
@@ -34,18 +32,17 @@ public class TwitterReduce extends Reducer<Text, Text, Text, DoubleWritable> {
 				tauxSentiment += dic.map.get(word);
 			}
 		}
-		double t = 0d;
+		float t;
 		if (count != 0) {
-			t = (tauxSentiment / count);
-			context.write(key, new DoubleWritable(t));
+			t = (tauxSentiment / count );
+			context.write(key, new FloatWritable(t));
+			collection.insertOne(new Document().append("index",key).append("taux",t));
 
 		}
 
 		else
-			context.write(key, new DoubleWritable(0));
-		collection.insertOne(new Document().append("index", key.toString())
-				.append("taux", t));
-
+			context.write(key, new FloatWritable(0));
+			collection.insertOne(new Document().append("index",key.toString()).append("taux",0f));
 	}
 
 }
