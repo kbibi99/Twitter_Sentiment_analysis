@@ -22,7 +22,6 @@ public class TwitterReduce extends Reducer<Text, Text, Text, DoubleWritable> {
 
 		MongoDatabase db = mongoClient.getDatabase("twitter");
 		MongoCollection<Document> collection = db.getCollection("hashtags");
-		collection.drop();
 
 		Dic dic = new Dic();
 		Iterator<Text> i = values.iterator();
